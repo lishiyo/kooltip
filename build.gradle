@@ -22,7 +22,7 @@ allprojects {
         jcenter()
         maven {
             url 'https://jitpack.io'
-            credentials { username authToken }
+            credentials { username JITPACK_AUTH_TOKEN }
         }
     }
 }
