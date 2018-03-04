@@ -58,7 +58,7 @@ class Kooltip(
 ): PopupWindow.OnDismissListener {
     private val TAG = Kooltip::class.java.simpleName
     companion object {
-        const val DEFAULT_DURATION_TIME: Long = 100000 // show for 10 s
+        const val DEFAULT_DURATION_TIME: Long = 1000000 // show for 1000 s
         const val DEFAULT_POPUP_WINDOW_STYLE = android.R.attr.popupWindowStyle
 
         fun create(contextRef: WeakReference<Context>,
@@ -141,13 +141,16 @@ class Kooltip(
                 return
             }
 
+            Log.i("connie", "locationLayoutListener -- contentView.width ${contentView.width} -- popupwindow w: ${popupWindow?.width}")
+
             Utils.removeOnGlobalLayoutListener(popupWindow?.contentView!!, this)
             popupWindow?.apply {
                 contentView.viewTreeObserver.addOnGlobalLayoutListener(arrowLayoutListener)
                 val location = Utils.calculatePopupLocation(this, anchorView, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
                 isClippingEnabled = true
-                update(location.x.toInt(), location.y.toInt(), width, height)
-                contentView.requestLayout()
+                Log.i("connie", "locationLayoutListener -- x, y: ${location.x}, ${location.y} w, h: $width, $height")
+//                update(location.x.toInt(), location.y.toInt(), width, height)
+//                contentView.requestLayout()
             }
         }
     }
@@ -175,8 +178,10 @@ class Kooltip(
         override fun onGlobalLayout() {
             if (!isShowable) return
             Utils.removeOnGlobalLayoutListener(popupWindow!!.contentView, this)
-            if (shouldAnimate) startEnterAnimation()
-            popupWindow!!.contentView.requestLayout()
+            if (shouldAnimate) {
+                startEnterAnimation()
+                popupWindow?.contentView?.requestLayout()
+            }
         }
     }
 
@@ -184,6 +189,7 @@ class Kooltip(
      * Auto-dismiss when the rootview is no longer showing.
      */
     private val autoDismissLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+//        Log.i("connie", "autoDismissLayoutListener -- rootView shown? ${rootView?.isShown}")
         if (rootView?.isShown == false) dismiss()
     }
 
@@ -194,6 +200,7 @@ class Kooltip(
         override fun onGlobalLayout() {
             if (!isShowable) return
             Utils.removeOnGlobalLayoutListener(popupWindow!!.contentView, this)
+            Log.i("connie", "showLayoutListener -- onShow!")
             listener?.onShow(this@Kooltip)
             contentLayout.visibility = View.VISIBLE
         }
@@ -204,6 +211,7 @@ class Kooltip(
             if (!isShowable) return
             val popup = popupWindow!!
             Utils.removeOnGlobalLayoutListener(popup.contentView, this)
+            // attach animation and shown listeners to the contentview
             popup.contentView.viewTreeObserver.addOnGlobalLayoutListener(animationLayoutListener)
             popup.contentView.viewTreeObserver.addOnGlobalLayoutListener(showLayoutListener)
             val anchorRect = Utils.calculateRectOnScreen(anchorView)
@@ -239,6 +247,8 @@ class Kooltip(
             }
             Utils.setX(arrowView, x.toInt())
             Utils.setY(arrowView, y.toInt())
+
+            Log.i("connie", "arrowLayoutListener - x, y: $x, $y")
             popup.contentView.requestLayout()
         }
     }
@@ -261,8 +271,9 @@ class Kooltip(
         anchorView.let {
             it.post {
                 if (it.isShown) {
-                    popupWindow!!.showAtLocation(it, Gravity.NO_GRAVITY, it.width, it.height)
-//                    popupWindow.showAsDropDown(it, it.width, it.height, gravity)
+                    Log.i("connie", "show -- x, y: ${it.width}, ${it.height}")
+//                    popupWindow?.showAtLocation(it, Gravity.NO_GRAVITY, it.width, it.height)
+                    popupWindow?.showAsDropDown(it, 0, 0, gravity)
                 } else {
                     Log.e(TAG, "Tooltip cannot be shown, root view is invalid or has been closed.")
                 }
@@ -338,12 +349,13 @@ class Kooltip(
         popupWindow.width = ViewGroup.LayoutParams.WRAP_CONTENT
         popupWindow.height = ViewGroup.LayoutParams.WRAP_CONTENT
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        popupWindow.isOutsideTouchable = true
+        popupWindow.isOutsideTouchable = true // deliver events to window behind
         popupWindow.isTouchable = true
         if (customAnimationStyle!= null) {
             popupWindow.animationStyle = customAnimationStyle!!
         }
 
+        // intercept touches
         popupWindow.setTouchInterceptor(View.OnTouchListener { v, event ->
             if (!isShowable) return@OnTouchListener false
 
@@ -351,23 +363,29 @@ class Kooltip(
             val y = event.y.toInt()
 
             when {
+                // not dismissing on touch outside and touched outside
                 (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_DOWN
                         && (x < 0 || x >= contentLayout.measuredWidth || y < 0 || y >= contentLayout.measuredHeight)) -> {
-                    return@OnTouchListener true
+                    Log.i("connie", "don't dismiss - ACTION_DOWN!")
+                    return@OnTouchListener false
                 }
+//                // not dismissing on touch outside and outside
                 (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_OUTSIDE) -> {
+                    Log.i("connie", "don't dismiss - ACTION_OUTSIDE!")
                     return@OnTouchListener true
                 }
+                // dissmissing out touch outside
                 (event.action == MotionEvent.ACTION_DOWN && dismissOnTouchOutside) -> {
+                    Log.i("connie", "do dismiss - ACTION_DOWN")
                     dismiss()
-                    return@OnTouchListener true
+                    return@OnTouchListener false // pass through
                 }
             }
 
             false
         })
         popupWindow.isClippingEnabled = false
-        popupWindow.isFocusable = true
+        popupWindow.isFocusable = false
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             popupWindow.elevation = context.resources.getDimension(R.dimen.tooltip_elevation)
         }
@@ -423,7 +441,7 @@ class Kooltip(
             }
         }
 
-        linearLayout.visibility = View.INVISIBLE
+//        linearLayout.visibility = View.INVISIBLE
         return linearLayout
     }
 
