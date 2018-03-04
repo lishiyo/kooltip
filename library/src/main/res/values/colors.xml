@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<eat-comment />
+
+	<!-- same color as inactive fab button -->
+	<color name="tumblr_accent">#529ecc</color>
+	<color name="white">#FFFFFFFF</color>
+
+	<color name="simpletooltip_text">@color/white</color>
+	<color name="simpletooltip_background">@color/tumblr_accent</color>
+	<color name="simpletooltip_arrow">@color/tumblr_accent</color>
+
+</resources>

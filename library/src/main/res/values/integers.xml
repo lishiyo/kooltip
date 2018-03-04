@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<integer name="tooltip_overlay_alpha">120</integer>
+	<integer name="tooltip_animation_duration">800</integer>
+
+</resources>

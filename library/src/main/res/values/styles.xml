@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- ===============================================================
+	 Resources android-simple-tooltip.
+	 =============================================================== -->
+	<eat-comment />
+
+	<style name="simpletooltip_default" parent="@android:style/TextAppearance.Medium">
+
+	</style>
+
+	<style name="AnimationPopup">
+		<item name="android:windowEnterAnimation">@anim/kooltip_enter</item>
+		<item name="android:windowExitAnimation">@anim/kooltip_exit</item>
+		<!-- Nexus 5 will inherit these from the parent activity if not set explicitly -->
+		<item name="android:activityOpenEnterAnimation">@anim/none</item>
+		<item name="android:activityOpenExitAnimation">@anim/none</item>
+		<item name="android:activityCloseEnterAnimation">@anim/none</item>
+		<item name="android:activityCloseExitAnimation">@anim/none</item>
+	</style>
+
+</resources>
