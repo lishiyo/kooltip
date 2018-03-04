@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+	<stroke
+		android:width="0dp"
+		android:color="@null" />
+
+	<solid android:color="@color/default_tooltip_background" />
+
+	<padding
+		android:bottom="@dimen/default_tooltip_padding"
+		android:left="@dimen/default_tooltip_padding"
+		android:right="@dimen/default_tooltip_padding"
+		android:top="@dimen/default_tooltip_padding" />
+
+	<corners android:radius="@dimen/tooltip_radius" />
+</shape>

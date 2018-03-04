@@ -127,8 +127,8 @@ object Utils {
 
     fun tooltipGravityToArrowDirection(tooltipGravity: Int): Int {
         when (tooltipGravity) {
-            Gravity.START -> return ArrowDrawable.RIGHT
-            Gravity.END -> return ArrowDrawable.LEFT
+            Gravity.START, Gravity.LEFT -> return ArrowDrawable.RIGHT
+            Gravity.END, Gravity.RIGHT -> return ArrowDrawable.LEFT
             Gravity.TOP -> return ArrowDrawable.BOTTOM
             Gravity.BOTTOM -> return ArrowDrawable.TOP
             Gravity.CENTER -> return ArrowDrawable.TOP
