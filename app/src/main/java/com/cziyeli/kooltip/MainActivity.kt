@@ -31,11 +31,16 @@ class MainActivity : AppCompatActivity() {
         false
     }
 
+    private var currentTapsCount: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        show_tooltips_btn.setOnClickListener {
+            showTooltip(target)
+        }
     }
 
     private val kooltipListener: KooltipListener = object : KooltipListener {
@@ -49,12 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun onTapInside(tooltip: Kooltip) {
             Log.i("connie", "onTapInside!")
+            currentTapsCount++
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        showTooltip(target)
     }
 
     private fun showTooltip(view: View) {
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 contextRef = WeakReference(this),
                 anchorView = view,
                 contentText = "this is pretty kool",
-                shouldShow = { true },
+                shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.TOP
         )
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                 contextRef = WeakReference(this),
                 anchorView = view,
                 contentText = "this is pretty kool",
-                shouldShow = { true },
+                shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.START
         )
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 contextRef = WeakReference(this),
                 anchorView = view,
                 contentText = "this is pretty kool",
-                shouldShow = { true },
+                shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.END
         )
@@ -86,15 +87,15 @@ class MainActivity : AppCompatActivity() {
                 contextRef = WeakReference(this),
                 anchorView = view,
                 contentText = "this is pretty kool",
-                shouldShow = { true },
+                shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.BOTTOM
         )
 
         // show all four
         topTooltip.show()
-//        leftTooltip.show()
-//        rightTooltip.show()
-//        bottomTooltip.show()
+        leftTooltip.show()
+        rightTooltip.show()
+        bottomTooltip.show()
     }
 }

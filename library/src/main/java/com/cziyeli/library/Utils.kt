@@ -4,10 +4,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.support.annotation.ColorRes
-import android.support.annotation.DrawableRes
 import android.support.annotation.StyleRes
 import android.view.Gravity
 import android.view.View
@@ -36,13 +34,6 @@ object Utils {
         }
 
         return null
-    }
-
-    /** Calculates the X offset needed to center the popup window under the anchor view.  */
-    fun calculateXOffset(anchorWidth: Float, popupWindowWidth: Int): Int {
-        val halfWidthOfAnchor = anchorWidth / 2f
-        val halfWidthOfPopup = popupWindowWidth / 2f
-        return (halfWidthOfAnchor - halfWidthOfPopup).toInt()
     }
 
     fun calculatePopupLocation(popupWindow: PopupWindow,
@@ -107,10 +98,6 @@ object Utils {
         return RectF()
     }
 
-    fun dpFromPx(px: Float): Float {
-        return px / Resources.getSystem().displayMetrics.density
-    }
-
     fun pxFromDp(dp: Float): Float {
         return dp * Resources.getSystem().displayMetrics.density
     }
@@ -126,12 +113,12 @@ object Utils {
     }
 
     fun tooltipGravityToArrowDirection(tooltipGravity: Int): Int {
-        when (tooltipGravity) {
-            Gravity.START, Gravity.LEFT -> return ArrowDrawable.RIGHT
-            Gravity.END, Gravity.RIGHT -> return ArrowDrawable.LEFT
-            Gravity.TOP -> return ArrowDrawable.BOTTOM
-            Gravity.BOTTOM -> return ArrowDrawable.TOP
-            Gravity.CENTER -> return ArrowDrawable.TOP
+        return when (tooltipGravity) {
+            Gravity.START, Gravity.LEFT -> ArrowDrawable.RIGHT
+            Gravity.END, Gravity.RIGHT -> ArrowDrawable.LEFT
+            Gravity.TOP -> ArrowDrawable.BOTTOM
+            Gravity.BOTTOM -> ArrowDrawable.TOP
+            Gravity.CENTER -> ArrowDrawable.TOP
             else -> throw IllegalArgumentException("Gravity must have be CENTER, START, END, TOP or BOTTOM.")
         }
     }
@@ -177,11 +164,4 @@ object Utils {
         }
     }
 
-    fun getDrawable(context: Context, @DrawableRes drawableRes: Int): Drawable? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            context.getDrawable(drawableRes)
-        } else {
-            context.resources.getDrawable(drawableRes)
-        }
-    }
 }
