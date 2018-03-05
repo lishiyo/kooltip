@@ -8,8 +8,7 @@
 	<dimen name="default_overlay_offset">10dp</dimen>
 	<dimen name="tooltip_offset_y">8dp</dimen>
 	<dimen name="tooltip_offset_x">8dp</dimen>
-	<dimen name="tooltip_radius">4dp</dimen>
-
+	<dimen name="tooltip_radius">8dp</dimen>
 	<dimen name="tooltip_elevation">4dp</dimen>
 
 	<dimen name="max_tooltip_width">130dp</dimen>

@@ -2,8 +2,10 @@
 <resources>
 
 	<color name="white">#FFFFFFFF</color>
-	<!-- same color as inactive fab button -->
-	<color name="default_tooltip_background">#529ecc</color>
+	<color name="gray">#444444</color>
+	<color name="blue">#529ecc</color>
+
+	<color name="default_tooltip_background">@color/blue</color>
 	<color name="default_arrow_color">@color/default_tooltip_background</color>
 	<color name="default_text_color">@color/white</color>
 

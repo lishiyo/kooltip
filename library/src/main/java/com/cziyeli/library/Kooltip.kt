@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.support.annotation.ColorRes
+import android.support.annotation.StyleRes
 import android.util.Log
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -58,6 +59,7 @@ class Kooltip(
         private var shouldAnimate: Boolean = true,
         @ColorRes private var backgroundColorRes: Int = R.color.default_tooltip_background,
         @ColorRes private var textColorRes: Int = R.color.default_text_color,
+        @StyleRes private var textAppearance: Int = R.style.default_text_appearance,
         // optional custom stuff
         private var customView: View? = null, // custom view (optional, overrides text)
         private var customAnimationStyle: Int? = null
@@ -79,10 +81,11 @@ class Kooltip(
                    animated: Boolean = true,
                    @ColorRes backgroundColorRes: Int = R.color.default_tooltip_background,
                    @ColorRes textColorRes: Int = R.color.default_text_color,
+                   @StyleRes textAppearance: Int = R.style.default_text_appearance,
                    customView: View? = null, // custom view (optional, overrides text)
                    customAnimationStyle: Int? = null): Kooltip {
            return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
-                   shouldHighlight, animated, backgroundColorRes, textColorRes, customView, customAnimationStyle)
+                   shouldHighlight, animated, backgroundColorRes, textColorRes, textAppearance, customView, customAnimationStyle)
         }
     }
 
@@ -380,8 +383,8 @@ class Kooltip(
         popupWindow.setTouchInterceptor(View.OnTouchListener { _, event ->
             if (!isShowable) return@OnTouchListener false
 
-            val x = event.x.toInt()
-            val y = event.y.toInt()
+//            val x = event.x.toInt()
+//            val y = event.y.toInt()
 
             when {
                 // not dismissing on touch outside and touched outside

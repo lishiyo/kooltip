@@ -10,6 +10,10 @@ import android.widget.PopupWindow
 import java.lang.ref.WeakReference
 
 /**
+ * A custom [PopupWindow] that scrolls with its anchor (we use this instead of [PopupWindow#showAsDropdown]
+ * because that cannot readjust its offsets upon scrolling, and we don't know our initial offsets until
+ * the content layout has been drawn).
+ *
  * Created by connieli on 3/4/18.
  */
 class AnchoredPopupWindow @JvmOverloads constructor(

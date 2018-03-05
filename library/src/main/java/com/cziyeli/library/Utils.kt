@@ -6,12 +6,14 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Build
 import android.support.annotation.ColorRes
+import android.support.annotation.StyleRes
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import android.widget.PopupWindow
+import android.widget.TextView
 
 object Utils {
 
@@ -166,4 +168,11 @@ object Utils {
         }
     }
 
+    fun setTextAppearance(tv: TextView, @StyleRes textAppearanceRes: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            tv.setTextAppearance(textAppearanceRes)
+        } else {
+            tv.setTextAppearance(tv.context, textAppearanceRes)
+        }
+    }
 }

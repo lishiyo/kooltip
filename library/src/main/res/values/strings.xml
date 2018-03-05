@@ -1,4 +1,5 @@
 <resources>
 	<string name="app_name">kooltip</string>
-	<string name="labs_tooltip_fast_queue">Did you know you can fast-queue a post with the \'Fast Queue\' labs project? Try it!</string>
+	<string name="labs_tooltip_fast_queue">Did you know you can show this tooltip on a scrolling view (ex a recyclerview item)? Try
+		it!</string>
 </resources>
