@@ -51,6 +51,7 @@ class Kooltip(
         private var contentText: String? = null, // text to show (if no custom view)
         private val shouldShow: () -> Boolean, // predicate to determine whether to show
         val listener: KooltipListener? = null, // callbacks
+        val onDismissListener: PopupWindow.OnDismissListener? = null,
         // default config (customizable)
         val gravity: Int = Gravity.TOP, // anchor to top of view
         private val durationTimeMs: Long = DEFAULT_DURATION_TIME, // how long to show it
@@ -74,6 +75,7 @@ class Kooltip(
                    contentText: String? = null, // text to show (if no custom view)
                    shouldShow: () -> Boolean, // predicate to determine whether to show
                    listener: KooltipListener? = null, // callbacks
+                   onDismissListener: PopupWindow.OnDismissListener? = null, // separate listener
                    gravity: Int = Gravity.TOP, // anchor to top of view
                    durationTimeMs: Long = DEFAULT_DURATION_TIME, // how long to show it
                    dismissOnTouchOutside: Boolean = false, // whether to dismiss on outside touch
@@ -84,8 +86,8 @@ class Kooltip(
                    @StyleRes textAppearance: Int = R.style.default_text_appearance,
                    customView: View? = null, // custom view (optional, overrides text)
                    customAnimationStyle: Int? = null): Kooltip {
-            return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
-                    shouldHighlight, animated, backgroundColorRes, textColorRes, textAppearance, customView, customAnimationStyle)
+            return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, onDismissListener, gravity, durationTimeMs,
+                    dismissOnTouchOutside, shouldHighlight, animated, backgroundColorRes, textColorRes, textAppearance, customView, customAnimationStyle)
         }
     }
 
@@ -310,7 +312,7 @@ class Kooltip(
         }
     }
 
-    private fun dismiss() {
+    fun dismiss() {
         if (popupWindow?.isShowing == true) {
             popupWindow?.dismiss()
         }
@@ -321,6 +323,7 @@ class Kooltip(
 
         // notify listeners
         listener?.onDismiss(this)
+        onDismissListener?.onDismiss()
 
         // clear all animations and views
         animator?.let {
