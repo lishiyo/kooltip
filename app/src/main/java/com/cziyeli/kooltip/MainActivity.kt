@@ -38,10 +38,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTooltip(view: View) {
+        val text = resources.getString(R.string.labs_tooltip_fast_queue)
         val topTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
                 anchorView = view,
-                contentText = "this is pretty kool",
+                contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.TOP
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         val leftTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
                 anchorView = view,
-                contentText = "this is pretty kool",
+                contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.START
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         val rightTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
                 anchorView = view,
-                contentText = "this is pretty kool",
+                contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.END
@@ -65,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         val bottomTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
                 anchorView = view,
-                contentText = "this is pretty kool",
+                contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
                 gravity = Gravity.BOTTOM
@@ -73,8 +74,8 @@ class MainActivity : AppCompatActivity() {
 
         // show all four
         topTooltip.show()
-//        leftTooltip.show()
-//        rightTooltip.show()
-//        bottomTooltip.show()
+        leftTooltip.show()
+        rightTooltip.show()
+        bottomTooltip.show()
     }
 }

@@ -91,12 +91,12 @@ class Kooltip(
     private var isDismissed: Boolean = false
 
     /** Weak reference to the PopupWindow showing this tooltip **/
-    private val popupWindowRef: WeakReference<PopupWindow> by lazy {
+    private val popupWindowRef: WeakReference<AnchoredPopupWindow> by lazy {
         val context = contextRef.get() ?: throw Throwable("null context")
-        val popupWindow =createPopupWindow(context)
-        WeakReference<PopupWindow>(popupWindow)
+        val popupWindow = createPopupWindow(context)
+        WeakReference<AnchoredPopupWindow>(popupWindow)
     }
-    private val popupWindow: PopupWindow?
+    private val popupWindow: AnchoredPopupWindow?
         get() = popupWindowRef.get()
 
     /** Container wrapping the content view and the arrow.  **/
@@ -127,7 +127,7 @@ class Kooltip(
     private var animator: AnimatorSet? = null
     private val animationPadding: Float? = contextRef.get()?.resources?.getDimension(R.dimen.default_animation_padding)
     private val animationDuration: Int? = contextRef.get()?.resources?.getInteger(R.integer.tooltip_animation_duration)
-    private val maxTooltipWidth: Int? = contextRef.get()?.resources?.getDimension(R.dimen.default_tooltip_width)?.toInt()
+    private val maxTooltipWidth: Int? = contextRef.get()?.resources?.getDimension(R.dimen.max_tooltip_width)?.toInt()
     private val tooltipOffsetY: Int? = contextRef.get()?.resources?.getDimension(R.dimen.tooltip_offset_y)?.toInt()
     private val tooltipOffsetX: Int? = contextRef.get()?.resources?.getDimension(R.dimen.tooltip_offset_x)?.toInt()
 
@@ -149,8 +149,9 @@ class Kooltip(
                 val location = Utils.calculatePopupLocation(this, anchorView, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
                 isClippingEnabled = true
                 Log.i("connie", "locationLayoutListener -- x, y: ${location.x}, ${location.y} w, h: $width, $height")
-//                update(location.x.toInt(), location.y.toInt(), width, height)
-//                contentView.requestLayout()
+                // update with real positions
+                update(location.x.toInt(), location.y.toInt(), width, height)
+                contentView.requestLayout()
             }
         }
     }
@@ -189,8 +190,7 @@ class Kooltip(
      * Auto-dismiss when the rootview is no longer showing.
      */
     private val autoDismissLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-//        Log.i("connie", "autoDismissLayoutListener -- rootView shown? ${rootView?.isShown}")
-        if (rootView?.isShown == false) dismiss()
+        if (!anchorView.isShown || !anchorView.isAttachedToWindow) dismiss()
     }
 
     /**
@@ -270,10 +270,13 @@ class Kooltip(
 
         anchorView.let {
             it.post {
-                if (it.isShown) {
-                    Log.i("connie", "show -- x, y: ${it.width}, ${it.height}")
-//                    popupWindow?.showAtLocation(it, Gravity.NO_GRAVITY, it.width, it.height)
-                    popupWindow?.showAsDropDown(it, 0, 0, gravity)
+                if (it.isShown && popupWindow != null) {
+                    val aboveY = -(it.measuredHeight + tooltipOffsetY!!)
+                    val location = Utils.calculatePopupLocation(popupWindow!!, anchorView, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
+                    Log.i("connie", "SHOW -- anchor width, height: ${it.width}, ${it.height} " +
+                            "-- offsetY: $aboveY, offsetX: ${-tooltipOffsetX!!} -- LOCATION: $location")
+//                    popupWindow?.showAsDropDown(it, -tooltipOffsetX!!, aboveY, gravity)
+                    popupWindow?.showAtLocationAnchored(it, gravity, it.width, it.height, tooltipOffsetX, tooltipOffsetY)
                 } else {
                     Log.e(TAG, "Tooltip cannot be shown, root view is invalid or has been closed.")
                 }
@@ -343,8 +346,8 @@ class Kooltip(
         }
     }
 
-    private fun createPopupWindow(context: Context): PopupWindow {
-        val popupWindow = PopupWindow(context, null, DEFAULT_POPUP_WINDOW_STYLE)
+    private fun createPopupWindow(context: Context): AnchoredPopupWindow {
+        val popupWindow = AnchoredPopupWindow(context, null, DEFAULT_POPUP_WINDOW_STYLE)
         popupWindow.setOnDismissListener(this)
         popupWindow.width = ViewGroup.LayoutParams.WRAP_CONTENT
         popupWindow.height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -399,7 +402,6 @@ class Kooltip(
         val view: View = when {
             customView == null && contentText != null -> {
                 val tv = TextView(contextRef.get())
-                Utils.setTextAppearance(tv, R.style.default_text_appearance)
                 tv.setBackgroundColor(Utils.getColor(context, R.color.default_tooltip_background))
                 tv.setTextColor(Utils.getColor(context, R.color.default_text_color))
                 tv.text = contentText
@@ -441,7 +443,7 @@ class Kooltip(
             }
         }
 
-//        linearLayout.visibility = View.INVISIBLE
+        linearLayout.visibility = View.INVISIBLE
         return linearLayout
     }
 
