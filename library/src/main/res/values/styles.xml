@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<style name="default_text_appearance">
-		<item name="android:textSize">14sp</item>
-		<item name="android:fontFamily">@string/roboto_medium</item>
+		<item name="android:textSize">13sp</item>
+		<item name="android:fontFamily">@string/roboto_light</item>
+		<item name="android:textAlignment">center</item>
 	</style>
 
 </resources>

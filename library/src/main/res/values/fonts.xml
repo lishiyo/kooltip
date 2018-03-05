@@ -2,4 +2,5 @@
 <resources>
 	<!-- See http://stackoverflow.com/a/26545517 -->
 	<string name="roboto_medium">sans-serif</string>
+	<string name="roboto_light">sans-serif-light</string>
 </resources>

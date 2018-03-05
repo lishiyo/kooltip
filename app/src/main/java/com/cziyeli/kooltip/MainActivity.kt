@@ -12,23 +12,26 @@ import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
     private var currentTapsCount: Int = 0
+    private var tooltipsCount: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         show_tooltips_btn.setOnClickListener {
-            showTooltip(target)
+            if (tooltipsCount == 0) showTooltips(target)
         }
     }
 
     private val kooltipListener: KooltipListener = object : KooltipListener {
         override fun onShow(tooltip: Kooltip) {
             Log.i("connie", "onShow!")
+            tooltipsCount++
         }
 
         override fun onDismiss(tooltip: Kooltip) {
             Log.i("connie", "onDismiss!")
+            tooltipsCount--
         }
 
         override fun onTapInside(tooltip: Kooltip) {
@@ -37,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showTooltip(view: View) {
+    private fun showTooltips(view: View) {
         val text = resources.getString(R.string.labs_tooltip_fast_queue)
         val topTooltip = Kooltip.create(
                 contextRef = WeakReference(this),

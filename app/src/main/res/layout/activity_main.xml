@@ -12,7 +12,6 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:minHeight="2000dp"
-		android:background="@color/colorAccent"
 		>
 
 		<LinearLayout
@@ -33,13 +32,15 @@
 			<!-- TARGET -->
 			<TextView
 				android:id="@+id/target"
-				android:layout_width="143dp"
-				android:layout_height="50dp"
+				android:layout_width="100dp"
+				android:layout_height="100dp"
 				android:layout_gravity="center"
+				android:textAlignment="center"
+				android:gravity="center"
 				android:text="@string/title_home"
-				android:background="@color/colorPrimary"
-				android:layout_marginTop="400dp"
-				android:layout_marginBottom="600dp"
+				android:background="@color/colorAccent"
+				android:layout_marginTop="200dp"
+				android:layout_marginBottom="900dp"
 				/>
 
 			<View

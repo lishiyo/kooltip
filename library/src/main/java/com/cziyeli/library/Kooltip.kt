@@ -59,7 +59,7 @@ class Kooltip(
         private var shouldAnimate: Boolean = true,
         @ColorRes private var backgroundColorRes: Int = R.color.default_tooltip_background,
         @ColorRes private var textColorRes: Int = R.color.default_text_color,
-        @StyleRes private var textAppearance: Int = R.style.default_text_appearance,
+        @StyleRes private var textAppearanceRes: Int = R.style.default_text_appearance,
         // optional custom stuff
         private var customView: View? = null, // custom view (optional, overrides text)
         private var customAnimationStyle: Int? = null
@@ -421,6 +421,7 @@ class Kooltip(
                 val tv = TextView(contextRef.get())
                 tv.setBackgroundColor(Utils.getColor(context, backgroundColorRes))
                 tv.setTextColor(Utils.getColor(context, textColorRes))
+                Utils.setTextAppearance(tv, textAppearanceRes)
                 tv.text = contentText
                 tv
             }
@@ -435,6 +436,7 @@ class Kooltip(
         view.setPadding(padding, padding, padding, padding)
         view.background = context.resources.getDrawable(R.drawable.rounded_corners)
         view.setOnClickListener { listener?.onTapInside(this) }
+
         return view
     }
 
