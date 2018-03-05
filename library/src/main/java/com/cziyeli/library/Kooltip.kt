@@ -64,7 +64,7 @@ class Kooltip(
         private var customView: View? = null, // custom view (optional, overrides text)
         private var customAnimationStyle: Int? = null
 ): PopupWindow.OnDismissListener {
-    private val TAG = Kooltip::class.java.simpleName
+    private val TAG = "kooltip"
     companion object {
         const val DEFAULT_DURATION_TIME: Long = 30000 // show for 30s
         const val DEFAULT_POPUP_WINDOW_STYLE = android.R.attr.popupWindowStyle
@@ -84,8 +84,8 @@ class Kooltip(
                    @StyleRes textAppearance: Int = R.style.default_text_appearance,
                    customView: View? = null, // custom view (optional, overrides text)
                    customAnimationStyle: Int? = null): Kooltip {
-           return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
-                   shouldHighlight, animated, backgroundColorRes, textColorRes, textAppearance, customView, customAnimationStyle)
+            return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
+                    shouldHighlight, animated, backgroundColorRes, textColorRes, textAppearance, customView, customAnimationStyle)
         }
     }
 
@@ -301,7 +301,7 @@ class Kooltip(
                             "-- offsetY: $aboveY, offsetX: ${-tooltipOffsetX} -- LOCATION: $location")
                     popupWindow?.showAtLocationAnchored(it, gravity, it.width, it.height, tooltipOffsetX, tooltipOffsetY)
                 } else {
-                    Log.e(TAG, "Tooltip cannot be shown, root view is invalid or has been closed.")
+                    Log.e(TAG, "Tooltip cannot be shown -- anchorView shown: ${it.isShown} -- popupWindow: $popupWindow")
                 }
             }
             it.postDelayed({
@@ -387,16 +387,16 @@ class Kooltip(
 //            val y = event.y.toInt()
 
             when {
-                // not dismissing on touch outside and touched outside
+            // not dismissing on touch outside and touched outside
 //                (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_DOWN
 //                        && (x < 0 || x >= contentLayout.measuredWidth || y < 0 || y >= contentLayout.measuredHeight)) -> {
 //                    return@OnTouchListener false
 //                }
-                // not dismissing on touch outside and outside
+            // not dismissing on touch outside and outside
                 (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_OUTSIDE) -> {
                     return@OnTouchListener true
                 }
-                // dismissing out touch outside
+            // dismissing out touch outside
 //                (event.action == MotionEvent.ACTION_DOWN && dismissOnTouchOutside) -> {
 //                    dismiss()
 //                    return@OnTouchListener false // pass through
@@ -457,9 +457,9 @@ class Kooltip(
                 linearLayout.addView(contentView)
                 linearLayout.addView(arrowView)
             } else -> {
-                linearLayout.addView(arrowView)
-                linearLayout.addView(contentView)
-            }
+            linearLayout.addView(arrowView)
+            linearLayout.addView(contentView)
+        }
         }
 
         // start as invisible until we've drawn in the right position

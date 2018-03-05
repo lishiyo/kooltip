@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 	<dimen name="default_tooltip_padding">11dp</dimen>
 	<dimen name="default_arrow_width">15dp</dimen>
 	<dimen name="default_arrow_height">7dp</dimen>

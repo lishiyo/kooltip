@@ -22,26 +22,25 @@ class AnchoredPopupWindow @JvmOverloads constructor(
         defStyle: Int = 0,
         defStyleRes: Int = 0
 ) : PopupWindow(context, attrs, defStyle, defStyleRes) {
-
+    private val TAG = "kooltip"
     private var mAnchorRef: WeakReference<View>? = null
     private val mAnchor: View?
             get() = if (mAnchorRef != null && mAnchorRef?.get() != null) mAnchorRef?.get() else null
 
     private val onScrollChangedListener = ViewTreeObserver.OnScrollChangedListener {
-        Log.i("connie", "onScrollChangedListener!")
         this.alignToAnchor()
     }
     // auto-dismiss when anchor is detached
     private var onAnchorDetachedListener: View.OnAttachStateChangeListener? = object : View.OnAttachStateChangeListener {
         override fun onViewDetachedFromWindow(v: View?) {
-            Log.i("connie", "view detached!")
+            Log.i(TAG, "view detached!")
             v?.run {
                 dismiss()
             }
         }
 
         override fun onViewAttachedToWindow(v: View?) {
-            Log.i("connie", "view attached!")
+            Log.i(TAG, "view attached!")
         }
 
     }
