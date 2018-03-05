@@ -49,9 +49,9 @@ class Kooltip(
         private val contextRef: WeakReference<Context>,
         private val anchorViewRef: WeakReference<View>, // view to anchor to
         private var contentText: String? = null, // text to show (if no custom view)
-        private val shouldShow: () -> Boolean, // predicate to determine whether to show
-        val listener: KooltipListener? = null, // callbacks
-        val onDismissListener: PopupWindow.OnDismissListener? = null,
+        private var shouldShow: (() -> Boolean)?, // predicate to determine whether to show
+        private var listener: KooltipListener? = null, // callbacks
+        private var onDismissListener: PopupWindow.OnDismissListener? = null,
         // default config (customizable)
         val gravity: Int = Gravity.TOP, // anchor to top of view
         private val durationTimeMs: Long = DEFAULT_DURATION_TIME, // how long to show it
@@ -95,7 +95,7 @@ class Kooltip(
      * Whether this is valid to interact with and show.
      */
     private val isShowable: Boolean
-        get() = !isDismissed && contextRef.get() != null && popupWindow != null && anchorView != null && shouldShow()
+        get() = !isDismissed && contextRef.get() != null && popupWindow != null && anchorView != null && shouldShow?.invoke() == true
 
     private val isShowing: Boolean
         get() = popupWindow?.isShowing == true
@@ -324,6 +324,10 @@ class Kooltip(
         // notify listeners
         listener?.onDismiss(this)
         onDismissListener?.onDismiss()
+
+        listener = null
+        onDismissListener = null
+        shouldShow = null
 
         // clear all animations and views
         animator?.let {
