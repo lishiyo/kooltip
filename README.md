@@ -56,3 +56,8 @@ private val kooltipListener: KooltipListener = object : KooltipListener {
         }
     }
 ```
+
+#### TODOS
+
+- Allow tooltip to scroll under as it scrolls offscreen, instead of resizing to squeeze in
+- Add ability to highlight anchor with a dim overlay  
