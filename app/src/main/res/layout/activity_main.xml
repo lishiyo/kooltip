@@ -37,10 +37,11 @@
 				android:layout_gravity="center"
 				android:textAlignment="center"
 				android:gravity="center"
-				android:text="@string/title_home"
+				android:text="ANCHOR"
 				android:background="@color/colorAccent"
 				android:layout_marginTop="200dp"
 				android:layout_marginBottom="900dp"
+				android:padding="10dp"
 				/>
 
 			<View

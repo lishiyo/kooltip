@@ -8,3 +8,7 @@
 /build
 /captures
 .externalNativeBuild
+
+# Screenshots #
+##########
+screenshots/*.mp4
