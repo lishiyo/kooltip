@@ -10,7 +10,24 @@ Why not just use a generic `PopupWindow`? Kooltip's main benefit is the ability 
 it is a recyclerview item) - while the usual `PopupWindow#showAsDropdown` is capable of this, it requires you to know your PopupWindow's 
 width/height in advance to set offsets that won't cover the anchor view (attempts to `update` afterwards, alas, don't work with 
 scrolling). Kooltip allows for `wrap-content` PopupWindows that auto-adjust to your desired gravity and track the anchor view as it scrolls.
- 
+
+Add the jitpack url to your project's `build.gradle`:
+```
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
+	}
+}
+```
+Add the dependency in your `app` module's `build.gradle`:
+
+```
+dependencies {
+	compile 'com.github.lishiyo:kooltip:v0.2'
+}
+```
+
 ### Usage
 
 ```kotlin
