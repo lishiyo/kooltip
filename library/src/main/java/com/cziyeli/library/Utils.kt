@@ -6,14 +6,12 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Build
 import android.support.annotation.ColorRes
-import android.support.annotation.StyleRes
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import android.widget.PopupWindow
-import android.widget.TextView
 
 object Utils {
 
@@ -36,6 +34,24 @@ object Utils {
         return null
     }
 
+    /**
+     * Convert the gravity to the direction of the tooltip arrow.
+     */
+    fun tooltipGravityToArrowDirection(tooltipGravity: Int): Int {
+        return when (tooltipGravity) {
+            Gravity.START, Gravity.LEFT -> ArrowDrawable.RIGHT
+            Gravity.END, Gravity.RIGHT -> ArrowDrawable.LEFT
+            Gravity.TOP -> ArrowDrawable.BOTTOM
+            Gravity.BOTTOM -> ArrowDrawable.TOP
+            Gravity.CENTER -> ArrowDrawable.TOP
+            else -> throw IllegalArgumentException("Gravity must have be CENTER, START, END, TOP or BOTTOM.")
+        }
+    }
+
+    /**
+     * Calculate the location of the popup given the anchor view's current position
+     * and the target gravity.
+     */
     fun calculatePopupLocation(popupWindow: PopupWindow,
                                anchorView: View,
                                gravity: Int,
@@ -43,7 +59,6 @@ object Utils {
                                tooltipOffsetY: Int = 0
     ): PointF {
         val location = PointF()
-
         val anchorRect = Utils.calculateRectInWindow(anchorView)
         val anchorCenter = PointF(anchorRect.centerX(), anchorRect.centerY())
 
@@ -74,7 +89,10 @@ object Utils {
         return location
     }
 
-    fun calculateRectOnScreen(view: View?): RectF {
+    /**
+     * Calculate the location of the view on the screen, or null if not on screen.
+     */
+    fun calculateRectOnScreen(view: View?): RectF? {
         view?.apply {
             val location = IntArray(2)
             view.getLocationOnScreen(location)
@@ -83,9 +101,12 @@ object Utils {
                     (location[0] + view.measuredWidth).toFloat(),
                     (location[1] + view.measuredHeight).toFloat())
         }
-        return RectF()
+        return null
     }
 
+    /**
+     * Calculate the location of the view in the window, or null if not in window.
+     */
     fun calculateRectInWindow(view: View?): RectF {
         view?.apply {
             val location = IntArray(2)
@@ -112,17 +133,6 @@ object Utils {
         view.layoutParams = params
     }
 
-    fun tooltipGravityToArrowDirection(tooltipGravity: Int): Int {
-        return when (tooltipGravity) {
-            Gravity.START, Gravity.LEFT -> ArrowDrawable.RIGHT
-            Gravity.END, Gravity.RIGHT -> ArrowDrawable.LEFT
-            Gravity.TOP -> ArrowDrawable.BOTTOM
-            Gravity.BOTTOM -> ArrowDrawable.TOP
-            Gravity.CENTER -> ArrowDrawable.TOP
-            else -> throw IllegalArgumentException("Gravity must have be CENTER, START, END, TOP or BOTTOM.")
-        }
-    }
-
     fun setX(view: View, x: Int) {
         val marginParams = getOrCreateMarginLayoutParams(view)
         marginParams.leftMargin = x - view.left
@@ -146,14 +156,6 @@ object Utils {
 
     fun removeOnGlobalLayoutListener(view: View, listener: ViewTreeObserver.OnGlobalLayoutListener) {
         view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
-    }
-
-    fun setTextAppearance(tv: TextView, @StyleRes textAppearanceRes: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            tv.setTextAppearance(textAppearanceRes)
-        } else {
-            tv.setTextAppearance(tv.context, textAppearanceRes)
-        }
     }
 
     fun getColor(context: Context, @ColorRes colorRes: Int): Int {

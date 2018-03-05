@@ -8,6 +8,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.support.annotation.ColorRes
 import android.util.Log
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -19,6 +20,9 @@ import android.widget.TextView
 import com.cziyeli.library.TooltipOverlay.Companion.HIGHLIGHT_SHAPE_RECTANGULAR
 import java.lang.ref.WeakReference
 
+/**
+ * Implement to be informed of popup events.
+ */
 interface KooltipListener {
     /**
      * Called when the tooltip first shows.
@@ -31,18 +35,18 @@ interface KooltipListener {
     fun onDismiss(tooltip: Kooltip)
 
     /**
-     * Called when the is a tap inside the tooltip (use this to do CTA).
+     * Called when the is a tap inside the tooltip (use this to do a CTA).
      */
     fun onTapInside(tooltip: Kooltip)
 }
 
 /**
- *
+ * A simple tooltip that shows a 'levitating' popupwindow
  */
 class Kooltip(
         // required
         private val contextRef: WeakReference<Context>,
-        private val anchorView: View, // view to anchor to
+        private val anchorViewRef: WeakReference<View>, // view to anchor to
         private var contentText: String? = null, // text to show (if no custom view)
         private val shouldShow: () -> Boolean, // predicate to determine whether to show
         val listener: KooltipListener? = null, // callbacks
@@ -52,17 +56,19 @@ class Kooltip(
         private val dismissOnTouchOutside: Boolean = false, // whether to dismiss on outside touch
         private var shouldHighlight: Boolean = false, // if false, overlay is transparent
         private var shouldAnimate: Boolean = true,
+        @ColorRes private var backgroundColorRes: Int = R.color.default_tooltip_background,
+        @ColorRes private var textColorRes: Int = R.color.default_text_color,
         // optional custom stuff
         private var customView: View? = null, // custom view (optional, overrides text)
         private var customAnimationStyle: Int? = null
 ): PopupWindow.OnDismissListener {
     private val TAG = Kooltip::class.java.simpleName
     companion object {
-        const val DEFAULT_DURATION_TIME: Long = 1000000 // show for 1000 s
+        const val DEFAULT_DURATION_TIME: Long = 30000 // show for 30s
         const val DEFAULT_POPUP_WINDOW_STYLE = android.R.attr.popupWindowStyle
 
         fun create(contextRef: WeakReference<Context>,
-                   anchorView: View, // view to anchor to
+                   anchorViewRef: WeakReference<View>, // view to anchor to
                    contentText: String? = null, // text to show (if no custom view)
                    shouldShow: () -> Boolean, // predicate to determine whether to show
                    listener: KooltipListener? = null, // callbacks
@@ -71,10 +77,12 @@ class Kooltip(
                    dismissOnTouchOutside: Boolean = false, // whether to dismiss on outside touch
                    shouldHighlight: Boolean = false, // if false, overlay is transparent
                    animated: Boolean = true,
+                   @ColorRes backgroundColorRes: Int = R.color.default_tooltip_background,
+                   @ColorRes textColorRes: Int = R.color.default_text_color,
                    customView: View? = null, // custom view (optional, overrides text)
                    customAnimationStyle: Int? = null): Kooltip {
-           return Kooltip(contextRef, anchorView, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
-                   shouldHighlight, animated, customView, customAnimationStyle)
+           return Kooltip(contextRef, anchorViewRef, contentText, shouldShow, listener, gravity, durationTimeMs, dismissOnTouchOutside,
+                   shouldHighlight, animated, backgroundColorRes, textColorRes, customView, customAnimationStyle)
         }
     }
 
@@ -82,7 +90,7 @@ class Kooltip(
      * Whether this is valid to interact with and show.
      */
     private val isShowable: Boolean
-        get() = !isDismissed && contextRef.get() != null && popupWindow != null && shouldShow()
+        get() = !isDismissed && contextRef.get() != null && popupWindow != null && anchorView != null && shouldShow()
 
     private val isShowing: Boolean
         get() = popupWindow?.isShowing == true
@@ -90,28 +98,25 @@ class Kooltip(
     /** Flag for whether we've dismissed already.**/
     private var isDismissed: Boolean = false
 
+    /**
+     * The anchor view
+     */
+    private val anchorView: View?
+        get() = anchorViewRef.get()
+
     /** Weak reference to the PopupWindow showing this tooltip **/
-    private val popupWindowRef: WeakReference<AnchoredPopupWindow> by lazy {
-        val context = contextRef.get() ?: throw Throwable("null context")
-        val popupWindow = createPopupWindow(context)
-        WeakReference<AnchoredPopupWindow>(popupWindow)
-    }
+    private var popupWindowRef: WeakReference<AnchoredPopupWindow>
     private val popupWindow: AnchoredPopupWindow?
         get() = popupWindowRef.get()
 
     /** Container wrapping the content view and the arrow.  **/
-    private val contentLayout: View by lazy {
-        val context = contextRef.get() ?: throw Throwable("null context")
-        createContentLayout(context)
-    }
+
+    private lateinit var contentLayout: View
     /**
      * The main default content view showing the text.
      */
-    private val contentView: View by lazy {
-        val context = contextRef.get() ?: throw Throwable("null context")
-        createContentView(context)
-    }
-    /** The root frame layout of the anchor. **/
+    private lateinit var contentView: View
+    /** (Optional) The root frame layout of the anchor, used for figuring out highlight. **/
     private val rootView: ViewGroup? by lazy {
         Utils.findFrameLayout(anchorView)
     }
@@ -119,10 +124,7 @@ class Kooltip(
     private var arrowDirection: Int = Utils.tooltipGravityToArrowDirection(gravity)
     private val arrowColor = Utils.getColor(contextRef.get()!!, R.color.default_arrow_color)
     private val arrowDrawable: ArrowDrawable by lazy { ArrowDrawable(arrowColor, arrowDirection) }
-    private val arrowView: ImageView by lazy {
-        val context = contextRef.get() ?: throw Throwable("null context")
-        createArrowView(context)
-    }
+    private lateinit var arrowView: ImageView
 
     private var animator: AnimatorSet? = null
     private val animationPadding: Float? = contextRef.get()?.resources?.getDimension(R.dimen.default_animation_padding)
@@ -131,6 +133,11 @@ class Kooltip(
     private val tooltipOffsetY: Int? = contextRef.get()?.resources?.getDimension(R.dimen.tooltip_offset_y)?.toInt()
     private val tooltipOffsetX: Int? = contextRef.get()?.resources?.getDimension(R.dimen.tooltip_offset_x)?.toInt()
 
+    /**
+     * Location listener repositions the popup window to the anchor
+     * (otherwise, the top-left of the popup window is used as anchor point
+     * which may cover the anchor).
+     */
     private val locationLayoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
         override fun onGlobalLayout() {
             if (!isShowable) return
@@ -141,34 +148,16 @@ class Kooltip(
                 return
             }
 
-            Log.i("connie", "locationLayoutListener -- contentView.width ${contentView.width} -- popupwindow w: ${popupWindow?.width}")
-
             Utils.removeOnGlobalLayoutListener(popupWindow?.contentView!!, this)
             popupWindow?.apply {
                 contentView.viewTreeObserver.addOnGlobalLayoutListener(arrowLayoutListener)
-                val location = Utils.calculatePopupLocation(this, anchorView, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
+                val location = Utils.calculatePopupLocation(this, anchorView!!, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
                 isClippingEnabled = true
-                Log.i("connie", "locationLayoutListener -- x, y: ${location.x}, ${location.y} w, h: $width, $height")
+                Log.i(TAG, "locationLayoutListener -- x, y: ${location.x}, ${location.y} w, h: $width, $height")
                 // update with real positions
                 update(location.x.toInt(), location.y.toInt(), width, height)
                 contentView.requestLayout()
             }
-        }
-    }
-
-    // Optional overlay view if this should highlight the anchor.
-    private val tooltipOverlay: TooltipOverlay? by lazy {
-        if (!shouldHighlight || !isShowable) {
-            null
-        } else {
-            val view = TooltipOverlay(
-                    anchorView.context,
-                    anchorView,
-                    HIGHLIGHT_SHAPE_RECTANGULAR,
-                    anchorView.context.resources.getDimension(R.dimen.default_overlay_offset))
-            view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            rootView?.addView(view)
-            view
         }
     }
 
@@ -190,7 +179,9 @@ class Kooltip(
      * Auto-dismiss when the rootview is no longer showing.
      */
     private val autoDismissLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-        if (!anchorView.isShown || !anchorView.isAttachedToWindow) dismiss()
+        if (anchorView == null || anchorView?.isShown == false || anchorView?.isAttachedToWindow == false) {
+            dismiss()
+        }
     }
 
     /**
@@ -200,22 +191,26 @@ class Kooltip(
         override fun onGlobalLayout() {
             if (!isShowable) return
             Utils.removeOnGlobalLayoutListener(popupWindow!!.contentView, this)
-            Log.i("connie", "showLayoutListener -- onShow!")
             listener?.onShow(this@Kooltip)
             contentLayout.visibility = View.VISIBLE
         }
     }
 
+    /**
+     * Detect the arrow layout and trigger the animation.
+     */
     private val arrowLayoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
         override fun onGlobalLayout() {
             if (!isShowable) return
             val popup = popupWindow!!
             Utils.removeOnGlobalLayoutListener(popup.contentView, this)
+            val contentViewRect = Utils.calculateRectOnScreen(contentLayout) ?: return
+            val anchorRect = Utils.calculateRectOnScreen(anchorView) ?: return
+
             // attach animation and shown listeners to the contentview
             popup.contentView.viewTreeObserver.addOnGlobalLayoutListener(animationLayoutListener)
             popup.contentView.viewTreeObserver.addOnGlobalLayoutListener(showLayoutListener)
-            val anchorRect = Utils.calculateRectOnScreen(anchorView)
-            val contentViewRect = Utils.calculateRectOnScreen(contentLayout)
+
             var x: Float
             var y: Float
             if (arrowDirection == ArrowDrawable.TOP || arrowDirection == ArrowDrawable.BOTTOM) {
@@ -248,15 +243,39 @@ class Kooltip(
             Utils.setX(arrowView, x.toInt())
             Utils.setY(arrowView, y.toInt())
 
-            Log.i("connie", "arrowLayoutListener - x, y: $x, $y")
             popup.contentView.requestLayout()
+        }
+    }
+
+    // Optional overlay view if this should highlight the anchor.
+    private val tooltipOverlay: TooltipOverlay? by lazy {
+        if (!shouldHighlight || !isShowable) {
+            null
+        } else {
+            val anchorView = anchorView!!
+            val view = TooltipOverlay(
+                    anchorView.context,
+                    anchorView,
+                    HIGHLIGHT_SHAPE_RECTANGULAR,
+                    anchorView.context.resources.getDimension(R.dimen.default_overlay_offset))
+            view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            rootView?.addView(view)
+            view
         }
     }
 
     init {
         checkParams()
+        // create all the necessary views
+        val context = contextRef.get() ?: throw Throwable("null context")
+        val popupWindow = createPopupWindow(context)
+        popupWindowRef = WeakReference(popupWindow)
+        contentView = createContentView(context)
+        arrowView = createArrowView(context)
+        contentLayout = createContentLayout(context, contentView, arrowView)
+
         if (isShowable) {
-            popupWindow!!.contentView = contentLayout
+            popupWindow.contentView = contentLayout
         }
     }
 
@@ -265,17 +284,18 @@ class Kooltip(
     fun show() {
         if (isShowing || !isShowable) return
 
+        // Reposition the popup window correctly once its content layout is drawn.
         contentLayout.viewTreeObserver.addOnGlobalLayoutListener(locationLayoutListener)
+        // Auto-dismiss the popup if the anchor view is detached.
         contentLayout.viewTreeObserver.addOnGlobalLayoutListener(autoDismissLayoutListener)
 
-        anchorView.let {
+        anchorView?.let {
             it.post {
                 if (it.isShown && popupWindow != null) {
                     val aboveY = -(it.measuredHeight + tooltipOffsetY!!)
-                    val location = Utils.calculatePopupLocation(popupWindow!!, anchorView, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
-                    Log.i("connie", "SHOW -- anchor width, height: ${it.width}, ${it.height} " +
-                            "-- offsetY: $aboveY, offsetX: ${-tooltipOffsetX!!} -- LOCATION: $location")
-//                    popupWindow?.showAsDropDown(it, -tooltipOffsetX!!, aboveY, gravity)
+                    val location = Utils.calculatePopupLocation(popupWindow!!, anchorView!!, gravity, tooltipOffsetX!!, tooltipOffsetY!!)
+                    Log.i(TAG, "SHOW -- anchor width, height: ${it.width}, ${it.height} " +
+                            "-- offsetY: $aboveY, offsetX: ${-tooltipOffsetX} -- LOCATION: $location")
                     popupWindow?.showAtLocationAnchored(it, gravity, it.width, it.height, tooltipOffsetX, tooltipOffsetY)
                 } else {
                     Log.e(TAG, "Tooltip cannot be shown, root view is invalid or has been closed.")
@@ -287,7 +307,7 @@ class Kooltip(
         }
     }
 
-    fun dismiss() {
+    private fun dismiss() {
         if (popupWindow?.isShowing == true) {
             popupWindow?.dismiss()
         }
@@ -299,7 +319,7 @@ class Kooltip(
         // notify listeners
         listener?.onDismiss(this)
 
-        // clear all
+        // clear all animations and views
         animator?.let {
             it.removeAllListeners()
             it.end()
@@ -307,18 +327,15 @@ class Kooltip(
         }
         animator = null
 
-        // clear highlight views
         if (shouldHighlight && rootView != null && tooltipOverlay != null) {
             rootView!!.removeView(tooltipOverlay)
         }
 
-        popupWindow?.apply {
-            Utils.removeOnGlobalLayoutListener(contentView, locationLayoutListener)
-            Utils.removeOnGlobalLayoutListener(contentView, arrowLayoutListener)
-            Utils.removeOnGlobalLayoutListener(contentView, showLayoutListener)
-            Utils.removeOnGlobalLayoutListener(contentView, animationLayoutListener)
-            Utils.removeOnGlobalLayoutListener(contentView, autoDismissLayoutListener)
-        }
+        Utils.removeOnGlobalLayoutListener(contentView, locationLayoutListener)
+        Utils.removeOnGlobalLayoutListener(contentView, arrowLayoutListener)
+        Utils.removeOnGlobalLayoutListener(contentView, showLayoutListener)
+        Utils.removeOnGlobalLayoutListener(contentView, animationLayoutListener)
+        Utils.removeOnGlobalLayoutListener(contentView, autoDismissLayoutListener)
     }
 
     /**
@@ -327,6 +344,7 @@ class Kooltip(
     private fun startEnterAnimation() {
         if (!isShowable) return
 
+        // entrance fade-in
         val entranceAnim = ObjectAnimator.ofFloat(contentLayout, "alpha", 0f, 1f)
         entranceAnim.duration = 300
         entranceAnim.interpolator = DecelerateInterpolator()
@@ -359,7 +377,7 @@ class Kooltip(
         }
 
         // intercept touches
-        popupWindow.setTouchInterceptor(View.OnTouchListener { v, event ->
+        popupWindow.setTouchInterceptor(View.OnTouchListener { _, event ->
             if (!isShowable) return@OnTouchListener false
 
             val x = event.x.toInt()
@@ -367,25 +385,21 @@ class Kooltip(
 
             when {
                 // not dismissing on touch outside and touched outside
-                (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_DOWN
-                        && (x < 0 || x >= contentLayout.measuredWidth || y < 0 || y >= contentLayout.measuredHeight)) -> {
-                    Log.i("connie", "don't dismiss - ACTION_DOWN!")
-                    return@OnTouchListener false
-                }
-//                // not dismissing on touch outside and outside
+//                (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_DOWN
+//                        && (x < 0 || x >= contentLayout.measuredWidth || y < 0 || y >= contentLayout.measuredHeight)) -> {
+//                    return@OnTouchListener false
+//                }
+                // not dismissing on touch outside and outside
                 (!dismissOnTouchOutside && event.action == MotionEvent.ACTION_OUTSIDE) -> {
-                    Log.i("connie", "don't dismiss - ACTION_OUTSIDE!")
                     return@OnTouchListener true
                 }
-                // dissmissing out touch outside
-                (event.action == MotionEvent.ACTION_DOWN && dismissOnTouchOutside) -> {
-                    Log.i("connie", "do dismiss - ACTION_DOWN")
-                    dismiss()
-                    return@OnTouchListener false // pass through
-                }
+                // dismissing out touch outside
+//                (event.action == MotionEvent.ACTION_DOWN && dismissOnTouchOutside) -> {
+//                    dismiss()
+//                    return@OnTouchListener false // pass through
+//                }
+                else -> return@OnTouchListener false
             }
-
-            false
         })
         popupWindow.isClippingEnabled = false
         popupWindow.isFocusable = false
@@ -402,8 +416,8 @@ class Kooltip(
         val view: View = when {
             customView == null && contentText != null -> {
                 val tv = TextView(contextRef.get())
-                tv.setBackgroundColor(Utils.getColor(context, R.color.default_tooltip_background))
-                tv.setTextColor(Utils.getColor(context, R.color.default_text_color))
+                tv.setBackgroundColor(Utils.getColor(context, backgroundColorRes))
+                tv.setTextColor(Utils.getColor(context, textColorRes))
                 tv.text = contentText
                 tv
             }
@@ -422,9 +436,9 @@ class Kooltip(
     }
 
     /**
-     * Default layout wrapping the text view and arrow.
+     * Default layout wrapping the content view and arrow.
      */
-    private fun createContentLayout(context: Context): View {
+    private fun createContentLayout(context: Context, contentView: View, arrowView: View): View {
         val linearLayout = LinearLayout(context)
         linearLayout.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         linearLayout.orientation = if (arrowDirection == ArrowDrawable.LEFT || arrowDirection == ArrowDrawable.RIGHT)
@@ -443,6 +457,7 @@ class Kooltip(
             }
         }
 
+        // start as invisible until we've drawn in the right position
         linearLayout.visibility = View.INVISIBLE
         return linearLayout
     }

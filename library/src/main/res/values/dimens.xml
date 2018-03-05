@@ -12,6 +12,6 @@
 
 	<dimen name="tooltip_elevation">4dp</dimen>
 
-	<dimen name="max_tooltip_width">100dp</dimen>
+	<dimen name="max_tooltip_width">130dp</dimen>
 	<dimen name="max_tooltip_height">200dp</dimen>
 </resources>

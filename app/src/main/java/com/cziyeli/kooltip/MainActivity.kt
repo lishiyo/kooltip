@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         val text = resources.getString(R.string.labs_tooltip_fast_queue)
         val topTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
-                anchorView = view,
+                anchorViewRef = WeakReference(view),
                 contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         )
         val leftTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
-                anchorView = view,
+                anchorViewRef = WeakReference(view),
                 contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         )
         val rightTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
-                anchorView = view,
+                anchorViewRef = WeakReference(view),
                 contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         )
         val bottomTooltip = Kooltip.create(
                 contextRef = WeakReference(this),
-                anchorView = view,
+                anchorViewRef = WeakReference(view),
                 contentText = text,
                 shouldShow = { currentTapsCount < 4 },
                 listener = kooltipListener,
